@@ -1,0 +1,7 @@
+{
+    "jwtSecret": "<jwt_secret>",
+    "vkApp":{
+        "id": "<vk_app_id>",
+        "secret": "<vk_app_secret>"
+    }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "iata-back",
+  "version": "0.0.1",
+  "description": "IATA game backend",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iatamain/back.git"
+  },
+  "keywords": [
+    "iata",
+    "iata-game",
+    "iata-backend"
+  ],
+  "author": "cybor97",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/iatamain/back/issues"
+  },
+  "homepage": "https://github.com/iatamain/back#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "request": "^2.88.0",
+    "socket.io": "^2.2.0"
+  }
+}
