@@ -1,7 +1,13 @@
 {
     "jwtSecret": "<jwt_secret>",
-    "vkApp":{
+    "vkApp": {
         "id": "<vk_app_id>",
         "secret": "<vk_app_secret>"
+    },
+    "db": {
+        "host": "<db_host>",
+        "database": "<db_database>",
+        "username": "<db_username>",
+        "password": "<db_password>"
     }
 }
