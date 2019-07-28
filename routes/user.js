@@ -40,7 +40,7 @@ router
             await user.update(params);
         }
         else {
-            await User.create(user);
+            user = await User.create(params);
         }
         res.status(200).send(user);
     })
