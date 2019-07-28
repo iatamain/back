@@ -1,7 +1,9 @@
+require('./utils/expressAsyncErrors');
 const express = require('express');
 const socketio = require('socket.io');
 const auth = require('./routes/auth');
 const user = require('./routes/user');
+
 
 const app = express();
 
@@ -13,5 +15,12 @@ app
         next();
     })
     .use('/api', auth)
-    //.use(user)
+    .use('/api/user', user)
+    .use(async (err, req, res, next) => {
+        console.error(err);
+        res.status(500).send({
+            message: err.message,
+            stack: err.stack
+        });
+    })
     .listen(8081, 'localhost');

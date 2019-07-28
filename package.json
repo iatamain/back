@@ -23,6 +23,7 @@
   "homepage": "https://github.com/iatamain/back#readme",
   "dependencies": {
     "express": "^4.17.1",
+    "mysql2": "^1.6.5",
     "request": "^2.88.0",
     "sequelize": "^5.11.0",
     "socket.io": "^2.2.0"
