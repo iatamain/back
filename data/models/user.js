@@ -27,7 +27,7 @@ const User = connection.define('user', {
     //TODO: Recalculate
     lvl: {
         type: sequelize.INTEGER,
-        defaultValue: 0
+        defaultValue: 1
     },
     experience: {
         type: sequelize.INTEGER,
