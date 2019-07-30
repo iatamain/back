@@ -8,7 +8,8 @@ const Login = connection.define('login', {
         primaryKey: true,
         autoIncrement: true
     },
-    time: sequelize.INTEGER,
+    userId: sequelize.INTEGER,
+    time: sequelize.BIGINT,
     ip: sequelize.STRING,
     userAgent: sequelize.STRING
 }, {

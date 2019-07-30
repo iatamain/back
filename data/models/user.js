@@ -13,8 +13,6 @@ const User = connection.define('user', {
     },
     snsId: sequelize.INTEGER,
     snsName: sequelize.STRING,
-    firstname: sequelize.STRING,
-    lastname: sequelize.STRING,
     nickname: sequelize.STRING,
     age: sequelize.INTEGER,
     avatarUrl: sequelize.STRING,
@@ -23,6 +21,7 @@ const User = connection.define('user', {
     element: sequelize.STRING,
     rank: sequelize.INTEGER,
     rankingPos: sequelize.INTEGER,
+    //TODO: Recalculate
     lvl: sequelize.INTEGER,
     experience: sequelize.INTEGER,
     amountCrystal: sequelize.INTEGER,
