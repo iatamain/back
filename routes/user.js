@@ -18,15 +18,16 @@ router
             let loginsCount = await Login.count();
             let startOfDay = new Date();
             startOfDay.setHours(23, 59, 0, 0);
+            let loginsCountToday = await Login.count({
+                where: {
+                    time: { [sequelize.Op.gt]: startOfDay.getTime() }
+                }
+            })
 
             result = Object.assign(result, {
                 loginsCount: loginsCount,
-                isFirstLogin: loginsCount === 1,
-                isFirstLoginToday: await Login.count({
-                    where: {
-                        time: { [sequelize.Op.gt]: startOfDay.getTime() }
-                    }
-                })
+                isFirstLogin: loginsCount === 0,
+                isFirstLoginToday: loginsCountToday === 0
             });
 
         }
