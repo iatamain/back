@@ -8,9 +8,6 @@ const User = connection.define('user', {
         primaryKey: true,
         autoIncrement: true
     },
-    clanId: {
-        type: sequelize.INTEGER
-    },
     snsId: sequelize.INTEGER,
     snsName: sequelize.STRING,
     nickname: sequelize.STRING,
@@ -19,15 +16,33 @@ const User = connection.define('user', {
     sex: sequelize.STRING,
     country: sequelize.STRING,
     element: sequelize.STRING,
-    rank: sequelize.INTEGER,
-    rankingPos: sequelize.INTEGER,
+    rank: {
+        type: sequelize.INTEGER,
+        defaultValue: 0
+    },
+    rankingPos: {
+        type: sequelize.INTEGER,
+        defaultValue: 0
+    },
     //TODO: Recalculate
-    lvl: sequelize.INTEGER,
-    experience: sequelize.INTEGER,
-    amountCrystal: sequelize.INTEGER,
+    lvl: {
+        type: sequelize.INTEGER,
+        defaultValue: 0
+    },
+    experience: {
+        type: sequelize.INTEGER,
+        defaultValue: 0
+    },
+    amountCrystal: {
+        type: sequelize.INTEGER,
+        defaultValue: 0
+    },
     progress: sequelize.JSON,
     achivements: sequelize.JSON,
-    statistics: sequelize.JSON
+    statistics: {
+        type: sequelize.JSON,
+        defaultValue: { gamesTotal: 0, gamesWon: 0 }
+    }
 }, {
         timestamps: false,
     });

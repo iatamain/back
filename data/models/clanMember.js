@@ -1,8 +1,9 @@
 const sequelize = require('sequelize');
 const connection = require('../index').getConnection();
 const User = require('./user');
+const Clan = require('./clan');
 
-const Login = connection.define('login', {
+const ClanMember = connection.define('login', {
     id: {
         type: sequelize.INTEGER,
         allowNull: false,
@@ -16,12 +17,24 @@ const Login = connection.define('login', {
             key: 'id'
         }
     },
-    time: sequelize.BIGINT,
-    ip: sequelize.STRING,
-    userAgent: sequelize.STRING
+    clanId: {
+        type: sequelize.INTEGER,
+        references: {
+            model: Clan,
+            key: 'id'
+        }
+    },
+    role: {
+        type: sequelize.INTEGER,
+        defaultValue: 0
+    },
+    state: {
+        type: sequelize.INTEGER,
+        defaultValue: 0
+    }
 }, {
         timestamps: false,
     });
-Login.sync();
+ClanMember.sync();
 
-module.exports = Login;
+module.exports = ClanMember;

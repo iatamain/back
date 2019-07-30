@@ -3,6 +3,7 @@ const express = require('express');
 const socketio = require('socket.io');
 const auth = require('./routes/auth');
 const user = require('./routes/user');
+const clan = require('./routes/clan');
 const md5 = require('crypto');
 const config = require('./config');
 
@@ -43,7 +44,7 @@ app
         }
     })
     .use('/api/user', user)
-
+    .use('/api/clan', clan)
     .use(async (err, req, res, next) => {
         console.error(err);
         res.status(500).send({
