@@ -12,6 +12,9 @@ app
     .use(express.urlencoded({ extended: true }))
     .use((req, res, next) => {
         res.setHeader('Access-Control-Allow-Origin', '*');
+        if (req.method.toLowerCase() === 'options') {
+            res.status(200).send();
+        }
         next();
     })
     .use('/api', auth)
