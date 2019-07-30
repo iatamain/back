@@ -1,12 +1,12 @@
 const router = require('express').Router();
-const request = require('request');
 const sequelize = require('sequelize');
 const md5 = require('crypto');
 const config = require('../config');
 
 const User = require('../data/models/user');
+const Login = require('../data/models/login');
 
-//auth_key == md5(api_id + '_' + viewer_id + '_' + api_secret)
+
 router
     .use((req, res, next) => {
         //TODO: Review different authentications(native, sns: vk, fb, ...)
@@ -36,13 +36,36 @@ router
             : { snsId: req.snsId, snsName: req.snsName };
         let user = await User.findOne({ where: params });
         params = Object.assign(req.body, params);
+        let result = user.dataValues;
         if (user) {
             await user.update(params);
+            result.loginsCount = user
+            let loginsCount = await Login.count();
+            let startOfDay = new Date();
+            startOfDay.setHours(23, 59, 0, 0);
+
+            result = Object.assign(result, {
+                loginsCount: loginsCount,
+                isFirstLogin: loginsCount === 1,
+                isFirstLoginToday: await Login.count({
+                    where: {
+                        time: { [sequelize.Op.gt]: startOfDay.getTime() }
+                    }
+                })
+            });
+
         }
         else {
             user = await User.create(params);
+            await Login.create({
+                userId: user.id,
+                time: Date.now(),
+                ip: req.connection.remoteAddress,
+                userAgent: req.headers['user-agent']
+            });
+            result = Object.assign(result, { loginsCount: 1, isFirstLogin: true, isFirstLoginToday: true });
         }
-        res.status(200).send(user);
+        res.status(200).send(result);
     })
     .get('/self', async (req, res) => {
         let params = req.userId
