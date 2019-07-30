@@ -11,6 +11,9 @@ router
             : { snsId: req.snsId, snsName: req.snsName };
         let user = await User.findOne({ where: params });
         params = Object.assign(req.body, params);
+        if (params.firstname || params.lastname) {
+            params.nickname = [params.firstname || '', params.lastname || ''].join(' ').trim();
+        }
         let result = user ? user.dataValues : {};
         if (user) {
             await user.update(params);
