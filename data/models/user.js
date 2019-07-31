@@ -37,6 +37,11 @@ const User = connection.define('user', {
         type: sequelize.INTEGER,
         defaultValue: 0
     },
+    gotDailyBonusAt: {
+        type: sequelize.BIGINT,
+        //Default at 1970. Sorry if you're Dr.Who
+        defaultValue: 0
+    },
     progress: sequelize.JSON,
     achivements: sequelize.JSON,
     statistics: {
@@ -44,7 +49,7 @@ const User = connection.define('user', {
         defaultValue: { gamesTotal: 0, gamesWon: 0 }
     }
 }, {
-        timestamps: false,
+        timestamps: true,
     });
 User.sync();
 

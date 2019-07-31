@@ -4,6 +4,17 @@ const sequelize = require('sequelize');
 const User = require('../data/models/user');
 const Login = require('../data/models/login');
 
+const readOnlyUserFields = [
+    'rank',
+    'lvl',
+    'experience',
+    'amountCrystal',
+    'gotDailyBonusAt',
+    'progress',
+    'achivements',
+    'statistics'
+];
+
 router
     .put('/update', async (req, res) => {
         let params = req.userId
@@ -14,23 +25,29 @@ router
         if (params.firstName || params.lastName) {
             params.nickname = [params.firstName || '', params.lastName || ''].join(' ').trim();
         }
+        params.rankingPos = await User.count();
+        let paramsKeys = Object.keys(params);
+        for (let key of paramsKeys) {
+            delete params[key];
+        }
+
         let result = user ? user.dataValues : {};
         if (user) {
             await user.update(params);
-            result.loginsCount = user
+
             let loginsCount = await Login.count();
-            let startOfDay = new Date();
-            startOfDay.setHours(23, 59, 0, 0);
+            let startOfDay = new Date().setHours(0, 0, 0, 0);
             let loginsCountToday = await Login.count({
                 where: {
-                    time: { [sequelize.Op.gt]: startOfDay.getTime() }
+                    time: { [sequelize.Op.gt]: startOfDay }
                 }
-            })
+            });
 
             result = Object.assign(result, {
                 loginsCount: loginsCount,
                 isFirstLogin: loginsCount === 0,
-                isFirstLoginToday: loginsCountToday === 0
+                isFirstLoginToday: loginsCountToday === 0,
+                isGetDailyBonus: user.gotDailyBonusAt >= startOfDay
             });
 
         }
