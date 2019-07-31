@@ -1,7 +1,7 @@
 const sequelize = require('sequelize');
 const connection = require('../index').getConnection();
 
-const Clan = connection.define('login', {
+const Clan = connection.define('clan', {
     id: {
         type: sequelize.INTEGER,
         allowNull: false,

@@ -3,7 +3,7 @@ const connection = require('../index').getConnection();
 const User = require('./user');
 const Clan = require('./clan');
 
-const ClanMember = connection.define('login', {
+const ClanMember = connection.define('clanMember', {
     id: {
         type: sequelize.INTEGER,
         allowNull: false,
