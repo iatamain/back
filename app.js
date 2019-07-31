@@ -4,8 +4,8 @@ const socketio = require('socket.io');
 const auth = require('./routes/auth');
 const user = require('./routes/user');
 const clan = require('./routes/clan');
-const md5 = require('crypto');
 const config = require('./config');
+const utils = require('./utils');
 
 const app = express();
 
@@ -24,14 +24,11 @@ app
     .use((req, res, next) => {
         //TODO: Review different authentications(native, sns: vk, fb, ...)
         if (req.header('auth_key') && req.header('viewer_id')) {
-            let auth_key = req.header('auth_key');
-            let viewer_id = req.header('viewer_id');
-            const auth_key_check = md5.createHash('md5')
-                .update(`${config.vkApp.id}_${viewer_id}_${config.vkApp.secret}`)
-                .digest()
-                .toString('hex');
-            if (auth_key_check == auth_key) {
-                req.snsId = viewer_id;
+            let authKey = req.header('auth_key');
+            let viewerId = req.header('viewer_id');
+
+            if (utils.checkAuthKeyVK(authKey, viewerId, config.vkApp.id, config.vkApp.secret)) {
+                req.snsId = viewerId;
                 req.snsName = 'vk';
                 next();
             }
@@ -53,3 +50,64 @@ app
         });
     })
     .listen(8081, 'localhost');
+
+//Temp. random subscriber/event generator for front
+const socketApp = socketio();
+socketApp.on('connection', async socket => {
+    let authKey = socket.handshake.query['auth_key'];
+    let viewerId = socket.handshake.query['viewer_id'];
+    let usersStateUpdateInterval = null;
+    if (utils.checkAuthKeyVK(authKey, viewerId, config.vkApp.id, config.vkApp.secret)) {
+        socket
+            .on('/room', async (roomId) => {
+                socket.emit('/response', '/room', roomId);
+                let roomUsersCount = ~~(Math.random() * 10);
+                let roomUsers = [];
+                for (let i = 0; i < roomUsersCount; i++) {
+                    roomUsers.push({ nickname: Math.random().toString(16).split('.').pop(), state: {} });
+                }
+                socket.emit('/room/state', {
+                    state: 'lobby',
+                    users: roomUsers
+                });
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                roomUsersCount += ~~(Math.random() * 10);
+                for (let i = roomUsers.length; i < roomUsersCount; i++) {
+                    roomUsers.push({ nickname: Math.random().toString(16).split('.').pop(), state: {} });
+                }
+
+                socket.emit('/room/state', {
+                    state: 'lobby',
+                    users: roomUsers
+                });
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                usersStateUpdateInterval = setInterval(() => socket.emit('/room/state', {
+                    state: 'ingame',
+                    users: roomUsers.map(user => {
+                        user.state = {
+                            position: {
+                                x: user.state.position ? user.state.position.x + ~~(Math.random() * 100) - 5 : 1,
+                                y: user.state.position ? user.state.position.y + ~~(Math.random() * 100) - 5 : 1,
+                            },
+                            mouse: {
+                                x: user.state.mouse ? user.state.mouse.x + ~~(Math.random() * 100) - 5 : 1,
+                                y: user.state.mouse ? user.state.mouse.y + ~~(Math.random() * 100) - 5 : 1,
+                            },
+                            key: ~~(Math.random() * 10)
+                        };
+                        return user;
+                    })
+                }), 10);
+            })
+            .on('disconnect', () => clearInterval(usersStateUpdateInterval))
+            .on('error', err => {
+                console.error(err);
+                clearInterval(usersStateUpdateInterval);
+            });
+    }
+    else {
+        socket.disconnect(true);
+    }
+});
+
+socketApp.listen(4000);
