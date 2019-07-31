@@ -28,7 +28,9 @@ router
         params.rankingPos = await User.count();
         let paramsKeys = Object.keys(params);
         for (let key of paramsKeys) {
-            delete params[key];
+            if (readOnlyUserFields.includes(key)) {
+                delete params[key];
+            }
         }
 
         let result = user ? user.dataValues : {};
@@ -106,6 +108,22 @@ router
         }
         else {
             res.status(400).send('snsIds should be provided and be array!')
+        }
+    })
+    .post('/get-daily-bonus', async (req, res) => {
+        let user = await User.findOne({
+            where: {
+                snsName: req.snsName,
+                snsId: req.snsId
+            }
+        });
+        if (user.gotDailyBonusAt <= new Date().setHours(0, 0, 0, 0)) {
+            user.gotDailyBonusAt = Date.now();
+            await user.save();
+            res.status(200).send('OK');
+        }
+        else {
+            res.status(400).send('User already got daily bonus');
         }
     })
 
