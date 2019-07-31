@@ -126,5 +126,17 @@ router
             res.status(400).send('User already got daily bonus');
         }
     })
+    .delete('/self', async (req, res) => {
+        let user = await User.findOne({
+            where: {
+                snsName: req.snsName,
+                snsId: req.snsId
+            }
+        });
+        if (user) {
+            await user.destroy();
+        }
+        res.status(200).send('OK');
+    })
 
 module.exports = router;

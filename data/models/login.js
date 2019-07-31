@@ -22,6 +22,9 @@ const Login = connection.define('login', {
 }, {
         timestamps: false,
     });
+
+Login.belongsTo(User, { onDelete: 'cascade', onUpdate: 'cascade' })
+
 Login.sync();
 
 module.exports = Login;

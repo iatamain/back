@@ -37,4 +37,8 @@ const ClanMember = connection.define('login', {
     });
 ClanMember.sync();
 
+ClanMember.belongsTo(Clan, { onDelete: 'cascade', onUpdate: 'cascade' })
+ClanMember.belongsTo(User, { onDelete: 'cascade', onUpdate: 'cascade' })
+
+
 module.exports = ClanMember;
