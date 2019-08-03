@@ -25,7 +25,6 @@ router
         if (params.firstName || params.lastName) {
             params.nickname = [params.firstName || '', params.lastName || ''].join(' ').trim();
         }
-        params.rankingPos = await User.count();
         let paramsKeys = Object.keys(params);
         for (let key of paramsKeys) {
             if (readOnlyUserFields.includes(key)) {
@@ -54,6 +53,7 @@ router
 
         }
         else {
+            params.rankingPos = await User.count();
             user = await User.create(params);
             await Login.create({
                 userId: user.id,
