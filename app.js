@@ -1,11 +1,14 @@
 require('./utils/expressAsyncErrors');
 const express = require('express');
 const socketio = require('socket.io');
+const redis = require('redis');
 const auth = require('./routes/auth');
 const user = require('./routes/user');
 const clan = require('./routes/clan');
 const config = require('./config');
 const utils = require('./utils');
+const User = require('./data/models/user');
+const rooms = require('./events/rooms');
 
 const app = express();
 
@@ -58,7 +61,22 @@ socketApp.on('connection', async socket => {
     let viewerId = socket.handshake.query['viewer_id'];
     let usersStateUpdateInterval = null;
     if (utils.checkAuthKeyVK(authKey, viewerId, config.vkApp.id, config.vkApp.secret)) {
+        const user = User.findOne({where: {snsId: viewerId}});
+        if(!user){
+            socketApp.disconnect();
+        }
+
         socket
+            .on('/rooms/list', ...params => {
+                rooms.getList(redis, socket, user, ...params);
+            })
+            .on('/rooms/create', ...params => {
+                rooms.create(redis, socket, user, ...params);
+            })
+            .on('/rooms/connect', ...params => {
+                rooms.connect(redis. socket, user, ...params);
+            })
+
             .on('/room', async (roomId) => {
                 socket.emit('/response', '/room', roomId);
                 let roomUsersCount = ~~(Math.random() * 10);
