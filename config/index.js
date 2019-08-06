@@ -14,7 +14,8 @@ if (!fs.existsSync(configFilename)) {
 module.exports = Object.assign({
     vkOauthUrl: 'https://oauth.vk.com/access_token',
     vkApiUrl: 'https://api.vk.com/method',
-    vkApiVersion: '5.62'
+    vkApiVersion: '5.62',
+    defaultRoomVolume: 8
 },
     JSON.parse(fs.readFileSync(configFilename))
 );

@@ -8,7 +8,7 @@ const clan = require('./routes/clan');
 const config = require('./config');
 const utils = require('./utils');
 const User = require('./data/models/user');
-const rooms = require('./events/rooms');
+const Rooms = require('./events/rooms');
 
 const app = express();
 
@@ -65,16 +65,17 @@ socketApp.on('connection', async socket => {
         if(!user){
             socketApp.disconnect();
         }
+        const rooms = new Rooms(socketApp);
 
         socket
-            .on('/rooms/list', ...params => {
-                rooms.getList(redis, socket, user, ...params);
+            .on('/rooms/list', (...params) => {
+                rooms.getList(socket, user, ...params);
             })
-            .on('/rooms/create', ...params => {
-                rooms.create(redis, socket, user, ...params);
+            .on('/rooms/create', (...params) => {
+                rooms.create(socket, user, ...params);
             })
-            .on('/rooms/connect', ...params => {
-                rooms.connect(redis. socket, user, ...params);
+            .on('/rooms/connect', (...params) => {
+                rooms.connect(socket, user, ...params);
             })
 
             .on('/room', async (roomId) => {
