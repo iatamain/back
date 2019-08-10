@@ -77,6 +77,9 @@ socketApp.on('connection', async socket => {
             .on('/rooms/connect', (...params) => {
                 rooms.connect(socket, user, ...params);
             })
+            .on('/rooms/leave', () => {
+                rooms.leave(socket, user);
+            })
 
             .on('/room', async (roomId) => {
                 socket.emit('/response', '/room', roomId);

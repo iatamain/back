@@ -11,12 +11,16 @@ socketClient
     .on('/rooms/create', result => {
         console.log('/rooms/create', result);
         socketClient.emit('/rooms/users');
-        socketClient.emit('/rooms/connect', 'room1')
+        socketClient.emit('/rooms/leave');
+        socketClient.once('/rooms/leave', () => {
+            socketClient.emit('/rooms/connect', 'room1')
+        })
     });
 
 socketClient
     .on('/rooms/list', console.log.bind(this, '/rooms/list'))
     .on('/rooms/connect', console.log.bind(this, '/rooms/connect'))
     .on('/rooms/state', console.log.bind(this, '/rooms/state'))
+    .on('clientError', console.error.bind(this, 'clientError'))
 
 socketClient.emit('/rooms/list');
