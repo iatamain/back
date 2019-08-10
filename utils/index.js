@@ -7,6 +7,16 @@ const utils = {
             .digest()
             .toString('hex');
         return authKey == authKeyCheck;
+    },
+
+    getStartOfDay(time){
+        if(time == null){
+            time = new Date();
+        }
+        else if(!(time instanceof Date)){
+            time = new Date(time); 
+        }
+        return time.setHours(0, 0, 0, 0);
     }
 };
 

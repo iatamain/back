@@ -1,8 +1,12 @@
 const router = require('express').Router();
 const sequelize = require('sequelize');
 
+const utils = require('../utils');
+
 const User = require('../data/models/user');
 const Login = require('../data/models/login');
+
+const DAY_MILLISECONDS = 86400000;
 
 const readOnlyUserFields = [
     'rank',
@@ -37,7 +41,7 @@ router
             await user.update(params);
 
             let loginsCount = await Login.count();
-            let startOfDay = new Date().setHours(0, 0, 0, 0);
+            let startOfDay = utils.getStartOfDay(new Date().setHours(0, 0, 0, 0));
             let loginsCountToday = await Login.count({
                 where: {
                     time: { [sequelize.Op.gt]: startOfDay }
@@ -50,7 +54,6 @@ router
                 isFirstLoginToday: loginsCountToday === 0,
                 isGetDailyBonus: user.gotDailyBonusAt >= startOfDay
             });
-
         }
         else {
             params.rankingPos = await User.count();
@@ -117,8 +120,45 @@ router
                 snsId: req.snsId
             }
         });
-        if (user.gotDailyBonusAt <= new Date().setHours(0, 0, 0, 0)) {
-            user.gotDailyBonusAt = Date.now();
+        let currentTime = Date.now();
+        let startOfDay = new Date().setHours(0, 0, 0, 0);
+
+        if (user.gotDailyBonusAt <= startOfDay) {
+            let loginsTimes = await Login.findAll({
+                attributes: ['time'],
+                where: {userId: user.id},
+                order: [['time', 'desc']]
+            });
+            loginsTimes = loginsTimes.map(c => c.time);
+console.log('loginsTimes', loginsTimes);
+            let prevConcurrentTime = utils.getStartOfDay();
+            let concurrentTimes = 1;
+            for(let i = 0; i < loginsTimes.length; i++){
+                if(loginsTimes[i] < utils.getStartOfDay(prevConcurrentTime)){
+                    let startOfDay = utils.getStartOfDay(loginsTimes[i]);
+                    let gap = prevConcurrentTime - startOfDay;
+console.log('gap-dayMillis', gap, DAY_MILLISECONDS)
+                    if(gap == DAY_MILLISECONDS){
+                        concurrentTimes++;
+                        prevConcurrentTime = startOfDay;
+                    }
+                    else if(gap > DAY_MILLISECONDS){console.log('gap too large', gap)
+                        if(gap > DAY_MILLISECONDS){
+                            console.warn(`GAP should be dividable by day(${DAY_MILLISECONDS}ms), but actually ${gap}ms`);
+                        }
+                        break;
+                    }
+                }
+            }
+            //TODO: Review, should be restricted in query
+            if(concurrentTimes > 7){
+                concurrentTimes = 7;
+            }
+            let dailyBonusVolume = concurrentTimes * 5;
+console.log('concurrentTimes', concurrentTimes);
+console.log('dailyBonusVolume', dailyBonusVolume);
+            user.amountCrystal += dailyBonusVolume;
+            user.gotDailyBonusAt = currentTime;
             await user.save();
             res.status(200).send('OK');
         }
