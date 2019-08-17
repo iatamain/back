@@ -115,6 +115,7 @@ class Rooms {
             }
             user.roomId = null;
             socket.emit('/rooms/leave', removeResult);
+            this.socketIOServer.in(`/room${user.roomId}`).emit('/rooms/leave', user.id);
         }
         else{
             socket.emit('clientError', 'No roomId assigned to user');
