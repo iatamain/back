@@ -7,14 +7,14 @@ const socketClient = socketIOClient('ws://localhost:4000', {
 });
 
 socketClient
-    .emit('/rooms/create', 'test', 8)
+    .emit('/rooms/create', 'test', 1, 8, 'ctf', '123')
     .on('/rooms/create', result => {
         console.log('/rooms/create', result);
         socketClient.emit('/rooms/users');
         socketClient.emit('/rooms/leave');
         socketClient.once('/rooms/leave', (...params) => {
             console.log('/rooms/leave', params);
-            socketClient.emit('/rooms/connect', 'room1')
+            socketClient.emit('/rooms/connect', params[1], '123')
         })
     });
 

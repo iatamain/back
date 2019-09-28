@@ -43,6 +43,14 @@ router.post('/vkauth', (req, res) => {
     else {
         res.status(400).send('code or access_token should be provided');
     }
+})
+//TODO: Implement
+.post('/fbauth', (req, res) => {
+
+})
+//TODO: Implement
+.post('/nauth', (req, res) =>{
+    
 });
 
 function getUserInfo(access_token, callback) {
