@@ -18,7 +18,7 @@ const User = connection.define('user', {
     element: sequelize.STRING,
     rank: {
         type: sequelize.INTEGER,
-        defaultValue: 0
+        defaultValue: 1400
     },
     rankingPos: {
         type: sequelize.INTEGER,
@@ -49,8 +49,8 @@ const User = connection.define('user', {
         defaultValue: { gamesTotal: 0, gamesWon: 0 }
     }
 }, {
-        timestamps: true,
-    });
+    timestamps: true,
+});
 User.sync();
 
 module.exports = User;
