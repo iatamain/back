@@ -12,6 +12,8 @@ socketClient
         console.log('/rooms/create', result);
         socketClient.emit('/rooms/users');
         socketClient.emit('/rooms/leave');
+        socketClient.emit('/rooms/list');
+
         socketClient.once('/rooms/leave', (...params) => {
             console.log('/rooms/leave', params);
             socketClient.emit('/rooms/connect', params[1], '123')

@@ -47,10 +47,19 @@ class Rooms {
      */
     async getList(socket) {
         let roomsKeys = (await rKeys('room[0-9]*')) || [];
-        socket.emit('/rooms/list', roomsKeys.reduce(async (prev, next) => {
-            let roomId = next.split('room').pop();
+        let roomsList = await Promise.all(roomsKeys.map(async (roomKey) => {
+            let roomId = roomKey.split('room').pop();
             let passHash = await rHget(`room${roomId}`, 'password');
-            prev[next] = !!passHash;
+
+            return {
+                roomKey: roomKey,
+                password: !!passHash
+            };
+        }));
+
+        socket.emit('/rooms/list', roomsList.reduce((prev, next) => {
+            prev[next.roomKey] = { password: next.password };
+            return prev;
         }, {}));
     }
 
