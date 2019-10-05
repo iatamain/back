@@ -7,7 +7,13 @@ const socketClient = socketIOClient('ws://localhost:4000', {
 });
 
 socketClient
-    .emit('/rooms/create', 'test', 1, 8, 'ctf', '123')
+    .emit('/rooms/create', {
+        name: 'test',
+        mapId: 1,
+        usersCount: 8,
+        mode: 'ctf',
+        password: '123'
+    })
     .on('/rooms/create', result => {
         console.log('/rooms/create', result);
         socketClient.emit('/rooms/users');
@@ -24,6 +30,7 @@ socketClient
     .on('/rooms/list', console.log.bind(this, '/rooms/list'))
     .on('/rooms/connect', console.log.bind(this, '/rooms/connect'))
     .on('/rooms/state', console.log.bind(this, '/rooms/state'))
+    .on('/rooms/deleted', console.log.bind(this, '/rooms/deleted'))
     .on('clientError', console.error.bind(this, 'clientError'))
 
 socketClient.emit('/rooms/list');

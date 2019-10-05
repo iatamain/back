@@ -13,8 +13,8 @@ const ROOMS_STATE_LOBBY = 'lobby';
 const ROOMS_STATE_INGAME = 'ingame';
 const ROOMS_STATE_ENDGAME = 'endgame';
 
-const ROOMS_MODE_DEATHMATCH = 'deathmatch'
-const ROOMS_MODE_TEAM = 'team';
+const ROOMS_MODE_DEATHMATCH = 'dm'
+const ROOMS_MODE_TEAM = 'tdm';
 const ROOMS_MODE_CTF = 'ctf';
 const ROOMS_MODE_CTP = 'ctp';
 
@@ -144,10 +144,15 @@ class Rooms {
      * @param {string} mode
      * @param {string|null} password 
      */
-    async create(socket, user, name, mapId, usersCount, mode = ROOMS_MODE_DEATHMATCH, password = null) {
+    async create(socket, user, roomData) {
+        let { name, mapId, usersCount, mode, password } = roomData;
+        if (!password) {
+            password = null;
+        }
         if (!mode) {
             mode = ROOMS_MODE_DEATHMATCH;
         }
+
         if (!user.roomId) {
             if ([
                 ROOMS_MODE_DEATHMATCH,
@@ -197,6 +202,7 @@ class Rooms {
             if (usersCount === 0) {
                 console.log(`removing empty room${user.roomId}`);
                 await rDel(`room${user.roomId}`);
+                this.socketIOServer.emit('/rooms/deleted', `room${user.roomId}`)
             }
             socket.emit('/rooms/leave', removeResult, `room${user.roomId}`);
             user.roomId = null;
