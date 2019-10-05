@@ -57,8 +57,20 @@ class Rooms {
             };
         }));
 
-        socket.emit('/rooms/list', roomsList.reduce((prev, next) => {
+        socket.emit('/rooms/list', await roomsList.reduce(async (prev, next) => {
+            let keys = await rHkeys(next.roomKey);
             prev[next.roomKey] = { password: next.password };
+            let usersCount = 0;
+            for (let key of keys) {
+                if (key.match(/^usr(undefined|[0-9]*)$/)) {
+                    usersCount++;
+                }
+                else {
+                    prev[next.roomKey][key] = await rHget(next.roomKey, key);
+                }
+            }
+            prev[next.roomKey].usersCount = usersCount;
+
             return prev;
         }, {}));
     }
