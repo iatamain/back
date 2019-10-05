@@ -62,7 +62,7 @@ class Rooms {
             prev[next.roomKey] = { password: next.password };
             let usersCount = 0;
             for (let key of keys) {
-                if (key.match(/^usr(undefined|[0-9]*)$/)) {
+                if (key.match(/^usr(undefined|\d*)$/)) {
                     usersCount++;
                 }
                 else {
@@ -112,7 +112,7 @@ class Rooms {
                     socket.emit('/rooms/connect', true);
                     socket.join(`/room${roomId}`);
                     let keys = await rHkeys(`room${roomId}`);
-                    keys = keys.filter(key => key.match(/^usr\d*$/));
+                    keys = keys.filter(key => key.match(/^usr(undefined|\d*)$/));
                     let roomVolume = await rHget(`room${roomId}`, 'volume');
 
                     if (keys.length >= roomVolume) {
@@ -191,8 +191,11 @@ class Rooms {
     async leave(socket, user) {
         if (user.roomId) {
             let removeResult = await rHdel(`room${user.roomId}`, `usr${user.id}`);
-            let roomsCount = await rHlen(`room${user.roomId}`);
-            if (roomsCount === 0) {
+
+            let keys = await rHkeys(`${user.roomId}`);
+            let usersCount = keys.filter(key => key.match(/^usr(undefined|\d*)$/)).length;
+            if (usersCount === 0) {
+                console.log(`removing empty room${user.roomId}`);
                 await rDel(`room${user.roomId}`);
             }
             socket.emit('/rooms/leave', removeResult, `room${user.roomId}`);
