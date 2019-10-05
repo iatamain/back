@@ -42,6 +42,8 @@ const rHset = promisify(redis.hset.bind(redis));
 const rHmset = promisify(redis.hmset.bind(redis));
 const rDel = promisify(redis.del.bind(redis));
 const rIncr = promisify(redis.incr.bind(redis));
+const rGet = promisify(redis.get.bind(redis));
+const rSet = promisify(redis.set.bind(redis));
 
 class Rooms {
     /**
@@ -50,6 +52,10 @@ class Rooms {
      */
     constructor(socketIOServer) {
         this.socketIOServer = socketIOServer;
+    }
+
+    async getRoomId(user) {
+        return await rGet(`usr${user.id}RoomId`)
     }
 
     /**
@@ -121,6 +127,7 @@ class Rooms {
                     await rHset(`room${roomId}`, `usr${user.id}`, ROOMS_USER_STATE_ONLINE);
                     //assign roomId for user
                     user.roomId = roomId;
+                    await rSet(`usr${user.id}RoomId`, roomId)
 
                     this.socketIOServer.in(`/room${roomId}`).emit('/rooms/connect', user.id);
                     socket.emit('/rooms/connect', true);
@@ -194,6 +201,8 @@ class Rooms {
                 let passHash = false;
 
                 user.roomId = roomLastId;
+                await rSet(`usr${user.id}RoomId`, roomLastId)
+
                 await rHmset(`room${roomLastId}`,
                     `usr${user.id}`, ROOMS_USER_STATE_ONLINE,
                     'mapId', mapId,
@@ -244,6 +253,8 @@ class Rooms {
             }
             socket.emit('/rooms/leave', removeResult, `room${user.roomId}`);
             user.roomId = null;
+            await rDel(`usr${user.id}RoomId`);
+
             this.socketIOServer.in(`/room${user.roomId}`).emit('/rooms/leave', user.id);
         }
         else {

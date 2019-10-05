@@ -68,6 +68,7 @@ socketApp.on('connection', async socket => {
         user = user.dataValues;
 
         const rooms = new Rooms(socketApp);
+        user.roomId = await rooms.getRoomId(user);
 
         socket
             .on('/rooms/list', (...params) => {
