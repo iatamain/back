@@ -19,6 +19,7 @@ socketClient
         socketClient.emit('/rooms/users');
         socketClient.emit('/rooms/leave');
         socketClient.emit('/rooms/list');
+        socketClient.emit('/rooms/my');
 
         socketClient.once('/rooms/leave', (...params) => {
             console.log('/rooms/leave', params);
@@ -28,9 +29,10 @@ socketClient
 
 socketClient
     .on('/rooms/list', console.log.bind(this, '/rooms/list'))
+    .on('/rooms/my', console.log.bind(this, '/rooms/my'))
     .on('/rooms/connect', console.log.bind(this, '/rooms/connect'))
     .on('/rooms/state', console.log.bind(this, '/rooms/state'))
     .on('/rooms/deleted', console.log.bind(this, '/rooms/deleted'))
-    .on('clientError', console.error.bind(this, 'clientError'))
+    .on('clientError', console.error.bind(this, 'clientError'));
 
 socketClient.emit('/rooms/list');

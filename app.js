@@ -74,6 +74,10 @@ socketApp.on('connection', async socket => {
             .on('/rooms/list', (...params) => {
                 rooms.getList(socket, user, ...params);
             })
+            .on('/rooms/my', (...params) => {
+                rooms.getMy(socket, user, ...params);
+            })
+
             .on('/rooms/create', (...params) => {
                 rooms.create(socket, user, ...params);
             })

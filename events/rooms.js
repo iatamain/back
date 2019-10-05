@@ -40,6 +40,7 @@ const rHlen = promisify(redis.hlen.bind(redis));
 const rHdel = promisify(redis.hdel.bind(redis));
 const rHset = promisify(redis.hset.bind(redis));
 const rHmset = promisify(redis.hmset.bind(redis));
+const rHmget = promisify(redis.hmget.bind(redis));
 const rDel = promisify(redis.del.bind(redis));
 const rIncr = promisify(redis.incr.bind(redis));
 const rGet = promisify(redis.get.bind(redis));
@@ -94,6 +95,29 @@ class Rooms {
 
             return prev;
         }, {}));
+    }
+
+    async getMy(socket, user) {
+        let roomId = user.roomId;
+        let roomKey = `room${roomId}`;
+        let passHash = await rHget(roomKey, 'password');
+        let roomData = {
+            password: !!passHash
+        };
+
+        let keys = await rHkeys(roomKey);
+        let usersCount = 0;
+        for (let key of keys) {
+            if (key.match(/^usr(undefined|\d*)$/)) {
+                usersCount++;
+            }
+            else if (key !== 'password') {
+                roomData[key] = await rHget(roomKey, key);
+            }
+        }
+        roomData.usersCount = usersCount;
+
+        socket.emit('/rooms/my', roomKey, roomData);
     }
 
     //map:
@@ -231,7 +255,7 @@ class Rooms {
             }
         }
         else {
-            socket.emit('clientError', `You're already in room room${roomLastId}`);
+            socket.emit('clientError', `You're already in room room${user.roomId}`);
         }
     }
 
