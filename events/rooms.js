@@ -16,11 +16,22 @@ const ROOMS_STATE_ENDGAME = 'endgame';
 const ROOMS_MODE_DEATHMATCH = 'dm'
 const ROOMS_MODE_TEAM = 'tdm';
 const ROOMS_MODE_CTF = 'ctf';
-const ROOMS_MODE_CTP = 'ctp';
+const ROOMS_MODE_CTP = 'cp';
+
+const ROOMS_TYPES = [
+    ROOMS_MODE_DEATHMATCH,
+    ROOMS_MODE_TEAM,
+    ROOMS_MODE_CTF,
+    ROOMS_MODE_CTP
+]
 
 const ROOMS_USER_STATE_AFK = 0;
 const ROOMS_USER_STATE_ONLINE = 1;
 
+const ROOM_NAME_REGEX = /[A-Za-z0-9А-Яа-я\ \_\:\№\"\?\!\-\+\=\*\/\#\@\^\,\.\(\)\[\]\{\}\<\>\$\%\;\&]*/;
+const MIN_ROOM_NAME_LENGTH = 0;
+const MAX_ROOM_NAME_LENGTH = 20;
+const MAX_PASSWORD_LENGTH = 20;
 
 const rKeys = promisify(redis.keys.bind(redis));
 const rHget = promisify(redis.hget.bind(redis));
@@ -146,11 +157,27 @@ class Rooms {
      */
     async create(socket, user, roomData) {
         let { name, mapId, usersCount, mode, password } = roomData;
-        if (!password) {
+        if (!password || password == '') {
             password = null;
+        }
+        if (password && password.length > MAX_PASSWORD_LENGTH) {
+            return socket.emit('clientError', `Password length should be < ${MAX_PASSWORD_LENGTH}`);
         }
         if (!mode) {
             mode = ROOMS_MODE_DEATHMATCH;
+        }
+        if (!ROOMS_TYPES.includes(mode)) {
+            return socket.emit('clientError', `Invalid room mode ${mode}`);
+        }
+        if (!name) {
+            return socket.emit('clientError', `Room name cannot be undefined`);
+        }
+        name = name.trim();
+        if (!(name.length > MIN_ROOM_NAME_LENGTH && name.length <= MAX_ROOM_NAME_LENGTH)) {
+            return socket.emit('clientError', `Room name length out of range (${MIN_ROOM_NAME_LENGTH} - ${MAX_ROOM_NAME_LENGTH})`);
+        }
+        if (!name.match(ROOM_NAME_REGEX)) {
+            return socket.emit('clientError', `Room name may contain only space and specified symbols: A-Za-z0-9А-Яа-я_:№"?!-+=*/#@^,.()[]{}<>$%;&`);
         }
 
         if (!user.roomId) {
