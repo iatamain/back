@@ -61,27 +61,31 @@ class Rooms {
         let roomsList = await Promise.all(roomsKeys.map(async (roomKey) => {
             let roomId = roomKey.split('room').pop();
             let passHash = await rHget(`room${roomId}`, 'password');
-
-            return {
+            let roomData = {
                 roomKey: roomKey,
                 password: !!passHash
             };
-        }));
 
+            let keys = await rHkeys(roomKey);
 
-        socket.emit('/rooms/list', await roomsList.reduce(async (prev, next) => {
-            let keys = await rHkeys(next.roomKey);
-            prev[next.roomKey] = { password: next.password };
             let usersCount = 0;
             for (let key of keys) {
                 if (key.match(/^usr(undefined|\d*)$/)) {
                     usersCount++;
                 }
                 else if (key !== 'password') {
-                    prev[next.roomKey][key] = await rHget(next.roomKey, key);
+                    roomData[key] = await rHget(roomKey, key);
                 }
             }
-            prev[next.roomKey].usersCount = usersCount;
+            roomData.usersCount = usersCount;
+
+            return roomData;
+        }));
+
+        console.log(roomsKeys, roomsList)
+        socket.emit('/rooms/list', roomsList.reduce((prev, next) => {
+            prev[next.roomKey] = next;
+            delete prev[next.roomKey].roomKey;
 
             return prev;
         }, {}));
