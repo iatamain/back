@@ -68,6 +68,7 @@ class Rooms {
             };
         }));
 
+
         socket.emit('/rooms/list', await roomsList.reduce(async (prev, next) => {
             let keys = await rHkeys(next.roomKey);
             prev[next.roomKey] = { password: next.password };
@@ -76,7 +77,7 @@ class Rooms {
                 if (key.match(/^usr(undefined|\d*)$/)) {
                     usersCount++;
                 }
-                else {
+                else if (key !== 'password') {
                     prev[next.roomKey][key] = await rHget(next.roomKey, key);
                 }
             }
@@ -188,6 +189,8 @@ class Rooms {
                 ROOMS_MODE_CTP
             ].includes(mode)) {
                 let roomLastId = await rIncr('roomLastId');
+                let passHash = false;
+
                 user.roomId = roomLastId;
                 await rHmset(`room${roomLastId}`,
                     `usr${user.id}`, ROOMS_USER_STATE_ONLINE,
@@ -196,10 +199,16 @@ class Rooms {
                     'volume', usersCount || config.defaultRoomVolume,
                     'state', ROOMS_STATE_LOBBY,
                     'mode', mode,
-                    ...(password && ['password', crypto.createHash('sha256').update(password).digest('hex')] || [])
+                    ...(password && ['password', passHash = crypto.createHash('sha256').update(password).digest('hex')] || [])
                 );
-                console.log('password', roomLastId, await rHget(`room${roomLastId}`, 'password'));
-                this.socketIOServer.emit('/rooms/create', `room${roomLastId}`);
+
+                this.socketIOServer.emit('/rooms/create', `room${roomLastId}`, {
+                    name: name,
+                    mapId: mapId,
+                    mode: mode,
+                    password: !!passHash
+                });
+
             }
             else {
                 socket.emit('clientError', `mode should be one of ${[
@@ -211,7 +220,7 @@ class Rooms {
             }
         }
         else {
-            socket.emit('/rooms/create', `room${roomLastId}`);
+            socket.emit('clientError', `You're already in room room${roomLastId}`);
         }
     }
 

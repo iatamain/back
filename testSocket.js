@@ -14,8 +14,8 @@ socketClient
         mode: 'ctf',
         password: '123'
     })
-    .on('/rooms/create', result => {
-        console.log('/rooms/create', result);
+    .on('/rooms/create', (roomId, roomData) => {
+        console.log('/rooms/create', roomId, roomData);
         socketClient.emit('/rooms/users');
         socketClient.emit('/rooms/leave');
         socketClient.emit('/rooms/list');
