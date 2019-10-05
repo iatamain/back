@@ -61,10 +61,12 @@ socketApp.on('connection', async socket => {
     let viewerId = socket.handshake.query['viewer_id'];
     let usersStateUpdateInterval = null;
     if (utils.checkAuthKeyVK(authKey, viewerId, config.vkApp.id, config.vkApp.secret)) {
-        const user = User.findOne({where: {snsId: viewerId}});
-        if(!user){
-            socketApp.disconnect();
+        let user = await User.findOne({ where: { snsId: viewerId } });
+        if (!user) {
+            return socket.disconnect();
         }
+        user = user.dataValues;
+
         const rooms = new Rooms(socketApp);
 
         socket

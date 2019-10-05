@@ -82,7 +82,6 @@ class Rooms {
             return roomData;
         }));
 
-        console.log(roomsKeys, roomsList)
         socket.emit('/rooms/list', roomsList.reduce((prev, next) => {
             prev[next.roomKey] = next;
             delete prev[next.roomKey].roomKey;
@@ -117,7 +116,6 @@ class Rooms {
             }
             else if (roomState == ROOMS_STATE_LOBBY) {
                 let passHash = await rHget(`room${roomId}`, 'password');
-                console.log('passHash', roomId, passHash);
 
                 if (!passHash || password && passHash == crypto.createHash('sha256').update(password).digest('hex')) {
                     await rHset(`room${roomId}`, `usr${user.id}`, ROOMS_USER_STATE_ONLINE);

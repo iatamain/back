@@ -126,24 +126,25 @@ router
         if (user.gotDailyBonusAt <= startOfDay) {
             let loginsTimes = await Login.findAll({
                 attributes: ['time'],
-                where: {userId: user.id},
+                where: { userId: user.id },
                 order: [['time', 'desc']]
             });
             loginsTimes = loginsTimes.map(c => c.time);
-console.log('loginsTimes', loginsTimes);
+            console.log('loginsTimes', loginsTimes);
             let prevConcurrentTime = utils.getStartOfDay();
             let concurrentTimes = 1;
-            for(let i = 0; i < loginsTimes.length; i++){
-                if(loginsTimes[i] < utils.getStartOfDay(prevConcurrentTime)){
+            for (let i = 0; i < loginsTimes.length; i++) {
+                if (loginsTimes[i] < utils.getStartOfDay(prevConcurrentTime)) {
                     let startOfDay = utils.getStartOfDay(loginsTimes[i]);
                     let gap = prevConcurrentTime - startOfDay;
-console.log('gap-dayMillis', gap, DAY_MILLISECONDS)
-                    if(gap == DAY_MILLISECONDS){
+                    console.log('gap-dayMillis', gap, DAY_MILLISECONDS)
+                    if (gap == DAY_MILLISECONDS) {
                         concurrentTimes++;
                         prevConcurrentTime = startOfDay;
                     }
-                    else if(gap > DAY_MILLISECONDS){console.log('gap too large', gap)
-                        if(gap > DAY_MILLISECONDS){
+                    else if (gap > DAY_MILLISECONDS) {
+                        console.log('gap too large', gap)
+                        if (gap > DAY_MILLISECONDS) {
                             console.warn(`GAP should be dividable by day(${DAY_MILLISECONDS}ms), but actually ${gap}ms`);
                         }
                         break;
@@ -151,12 +152,12 @@ console.log('gap-dayMillis', gap, DAY_MILLISECONDS)
                 }
             }
             //TODO: Review, should be restricted in query
-            if(concurrentTimes > 7){
+            if (concurrentTimes > 7) {
                 concurrentTimes = 7;
             }
             let dailyBonusVolume = concurrentTimes * 5;
-console.log('concurrentTimes', concurrentTimes);
-console.log('dailyBonusVolume', dailyBonusVolume);
+            console.log('concurrentTimes', concurrentTimes);
+            console.log('dailyBonusVolume', dailyBonusVolume);
             user.amountCrystal += dailyBonusVolume;
             user.gotDailyBonusAt = currentTime;
             await user.save();
