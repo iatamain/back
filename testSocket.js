@@ -1,7 +1,7 @@
 const process = require('process');
 const socketIOClient = require('socket.io-client');
 console.log(process.argv)
-const socketClient = socketIOClient('ws://localhost:4000', {
+const socketClient = socketIOClient('wss://itracers.xyz:4443', {
     transports: ['websocket'],
     query: { auth_key: process.argv[2], viewer_id: process.argv[3] }
 });

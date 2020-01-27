@@ -243,7 +243,8 @@ class Rooms {
                     mode: mode,
                     password: !!passHash
                 });
-
+                socket.emit('/rooms/connect', true);
+                socket.join(`/room${user.roomId}`);
             }
             else {
                 socket.emit('clientError', `mode should be one of ${[
