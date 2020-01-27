@@ -141,8 +141,7 @@ class Rooms {
 
             let roomState = await rHget(`room${roomId}`, `state`);
             if (!roomState) {
-                socket.emit('/rooms/connect', false);
-                socket.emit('/rooms/state', ROOMS_STATE_UNEXIST);
+                socket.emit('clientError', 'Room is not exist.');
             }
             else if (roomState == ROOMS_STATE_LOBBY) {
                 let passHash = await rHget(`room${roomId}`, 'password');
@@ -166,16 +165,15 @@ class Rooms {
                     }
                 }
                 else {
-                    socket.emit('clientError', 'unauthorized');
+                    socket.emit('clientError', 'Unauthorized');
                 }
             }
             else {
-                socket.emit('/rooms/connect', false);
-                socket.emit('/rooms/state', roomState);
+                socket.emit('clientError', 'Room state is not lobby.');
             }
         }
         else {
-            socket.emit('/rooms/connect', false);
+            socket.emit('clientError', `You're already in room room${user.roomId}`);
         }
     }
 
