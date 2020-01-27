@@ -153,8 +153,8 @@ class Rooms {
                     user.roomId = roomId;
                     await rSet(`usr${user.id}RoomId`, roomId)
 
-                    this.socketIOServer.in(`/room${roomId}`).emit('/rooms/connect', user.id);
-                    socket.emit('/rooms/connect', true);
+                    this.socketIOServer.in(`/room${roomId}`).emit('/rooms/connect', roomId, user);
+                    socket.emit('/rooms/connect', roomId, user);
                     socket.join(`/room${roomId}`);
                     let keys = await rHkeys(`room${roomId}`);
                     keys = keys.filter(key => key.match(/^usr(undefined|\d*)$/));
@@ -243,7 +243,7 @@ class Rooms {
                     mode: mode,
                     password: !!passHash
                 });
-                socket.emit('/rooms/connect', true);
+                socket.emit('/rooms/connect', user.roomId, user);
                 socket.join(`/room${user.roomId}`);
             }
             else {
