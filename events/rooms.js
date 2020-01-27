@@ -265,7 +265,7 @@ class Rooms {
      */
     async leave(socket, user) {
         if (user.roomId) {
-            let removeResult = await rHdel(`room${user.roomId}`, `usr${user.id}`);
+            await rHdel(`room${user.roomId}`, `usr${user.id}`);
 
             let keys = await rHkeys(`${user.roomId}`);
             let usersCount = keys.filter(key => key.match(/^usr(undefined|\d*)$/)).length;
@@ -274,11 +274,11 @@ class Rooms {
                 await rDel(`room${user.roomId}`);
                 this.socketIOServer.emit('/rooms/deleted', `room${user.roomId}`)
             }
-            socket.emit('/rooms/leave', removeResult, `room${user.roomId}`);
+            socket.emit('/rooms/leave', user.roomId, user);
             user.roomId = null;
             await rDel(`usr${user.id}RoomId`);
 
-            this.socketIOServer.in(`/room${user.roomId}`).emit('/rooms/leave', user.id);
+            this.socketIOServer.in(`/room${user.roomId}`).emit('/rooms/leave', user.roomId, user);
         }
         else {
             socket.emit('clientError', 'No roomId assigned to user');
