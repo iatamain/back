@@ -292,8 +292,8 @@ class Rooms {
                 this.socketIOServer.emit('/rooms/deleted', `room${user.roomId}`)
             }
             socket.emit('/rooms/leave', user.roomId, user);
-            user.roomId = null;
             Logger.info(`leaving room${user.roomId} usr${user.id}`);
+            user.roomId = null;
             await rDel(`usr${user.id}RoomId`);
 
             this.socketIOServer.in(`/room${user.roomId}`).emit('/rooms/leave', user.roomId, user);
