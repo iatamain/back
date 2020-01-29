@@ -235,10 +235,10 @@ class Rooms {
             ].includes(mode)) {
                 let roomLastId = await rIncr('roomLastId');
                 let passHash = false;
+                user.roomId = roomLastId;
 
                 Logger.info(`creating room${user.roomId}`, { mapId, name, volume: usersCount || config.defaultRoomVolume, state: ROOMS_STATE_LOBBY, mode, user: `usr${user.id}` });
 
-                user.roomId = roomLastId;
                 await rSet(`usr${user.id}RoomId`, roomLastId)
 
                 await rHmset(`room${roomLastId}`,
@@ -285,8 +285,11 @@ class Rooms {
      */
     async leave(socket, user) {
         if (user.roomId) {
+            Logger.info(`leaving room${user.roomId} usr${user.id}`);
             await rHdel(`room${user.roomId}`, `usr${user.id}`);
             this.users.delete(user.id, user);
+
+            this.socketIOServer.emit('/rooms/leave', `room${user.roomId}`, user);
 
             let keys = await rHkeys(`${user.roomId}`);
             let usersCount = keys.filter(key => key.match(/^usr(undefined|\d*)$/)).length;
@@ -295,13 +298,9 @@ class Rooms {
                 await rDel(`room${user.roomId}`);
                 this.socketIOServer.emit('/rooms/deleted', `room${user.roomId}`)
             }
-            // socket.emit('/rooms/leave', user.roomId, user);
-            Logger.info(`leaving room${user.roomId} usr${user.id}`);
-            user.roomId = null;
-            await rDel(`usr${user.id}RoomId`);
 
-            // this.socketIOServer.in(`/room${user.roomId}`).emit('/rooms/leave', user.roomId, user);
-            this.socketIOServer.emit('/rooms/leave', `room${user.roomId}`, user);
+            await rDel(`usr${user.id}RoomId`);
+            user.roomId = null;
         }
         else {
             socket.emit('clientError', 'No roomId assigned to user');
