@@ -53,6 +53,7 @@ class Rooms {
      */
     constructor(socketIOServer) {
         this.socketIOServer = socketIOServer;
+        this.users = new Map();
     }
 
     async getRoomId(user) {
@@ -79,6 +80,10 @@ class Rooms {
             for (let key of keys) {
                 if (key.match(/^usr(undefined|\d*)$/)) {
                     usersCount++;
+                    if (!roomData.users) {
+                        roomData.users = [];
+                    }
+                    roomData.users.push(this.users.get(parseInt(key.split('usr').shift())));
                 }
                 else if (key !== 'password') {
                     roomData[key] = await rHget(roomKey, key);
@@ -110,6 +115,10 @@ class Rooms {
         for (let key of keys) {
             if (key.match(/^usr(undefined|\d*)$/)) {
                 usersCount++;
+                if (!roomData.users) {
+                    roomData.users = [];
+                }
+                roomData.users.push(this.users.get(parseInt(key.split('usr').shift())));
             }
             else if (key !== 'password') {
                 roomData[key] = await rHget(roomKey, key);
@@ -148,6 +157,8 @@ class Rooms {
 
                 if (!passHash || password && passHash == crypto.createHash('sha256').update(password).digest('hex')) {
                     await rHset(`room${roomId}`, `usr${user.id}`, ROOMS_USER_STATE_ONLINE);
+                    this.users.set(user.id, user);
+
                     //assign roomId for user
                     user.roomId = roomId;
                     await rSet(`usr${user.id}RoomId`, roomId)
@@ -235,6 +246,8 @@ class Rooms {
                     ...(password && ['password', passHash = crypto.createHash('sha256').update(password).digest('hex')] || [])
                 );
 
+                this.users.set(user.id, user);
+
                 this.socketIOServer.emit('/rooms/create', `room${roomLastId}`, {
                     name: name,
                     mapId: mapId,
@@ -266,6 +279,7 @@ class Rooms {
     async leave(socket, user) {
         if (user.roomId) {
             await rHdel(`room${user.roomId}`, `usr${user.id}`);
+            this.users.delete(user.id, user);
 
             let keys = await rHkeys(`${user.roomId}`);
             let usersCount = keys.filter(key => key.match(/^usr(undefined|\d*)$/)).length;
