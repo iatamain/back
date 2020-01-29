@@ -179,7 +179,7 @@ class Rooms {
                     }
                 }
                 else {
-                    socket.emit('clientError', 'Unauthorized');
+                    socket.emit('clientError', 'Unauthorized', `room${roomId}`);
                 }
             }
             else {
