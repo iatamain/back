@@ -164,8 +164,10 @@ class Rooms {
                     await rSet(`usr${user.id}RoomId`, roomId)
                     Logger.info(`connecting room${user.roomId} usr${user.id}`);
 
-                    this.socketIOServer.in(`/room${roomId}`).emit('/rooms/connect', roomId, user);
-                    socket.emit('/rooms/connect', roomId, user);
+                    // this.socketIOServer.in(`/room${roomId}`).emit('/rooms/connect', roomId, user);
+                    // socket.emit('/rooms/connect', roomId, user);
+                    this.socketIOServer.emit('/rooms/connect', `room${roomId}`, user);
+
                     socket.join(`/room${roomId}`);
                     let keys = await rHkeys(`room${roomId}`);
                     keys = keys.filter(key => key.match(/^usr(undefined|\d*)$/));
@@ -257,7 +259,9 @@ class Rooms {
                     mode: mode,
                     password: !!passHash
                 });
-                socket.emit('/rooms/connect', user.roomId, user);
+                // socket.emit('/rooms/connect', user.roomId, user);
+                this.socketIOServer.emit('/rooms/connect', `room${user.roomId}`, user);
+
                 socket.join(`/room${user.roomId}`);
             }
             else {
@@ -291,12 +295,13 @@ class Rooms {
                 await rDel(`room${user.roomId}`);
                 this.socketIOServer.emit('/rooms/deleted', `room${user.roomId}`)
             }
-            socket.emit('/rooms/leave', user.roomId, user);
+            // socket.emit('/rooms/leave', user.roomId, user);
             Logger.info(`leaving room${user.roomId} usr${user.id}`);
             user.roomId = null;
             await rDel(`usr${user.id}RoomId`);
 
-            this.socketIOServer.in(`/room${user.roomId}`).emit('/rooms/leave', user.roomId, user);
+            // this.socketIOServer.in(`/room${user.roomId}`).emit('/rooms/leave', user.roomId, user);
+            this.socketIOServer.emit('/rooms/leave', `room${user.roomId}`, user);
         }
         else {
             socket.emit('clientError', 'No roomId assigned to user');
