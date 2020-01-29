@@ -3,10 +3,10 @@ const crypto = require('crypto');
 //case 1: hash = hash(pass)
 //case 2: sign(privKey, {timestamp, name, playerId})=>signedData=>verify(pubKey, {timestamp, name, playerId})
 
-
 const redis = require('redis').createClient();
 const config = require('../config');
 const promisify = require('util').promisify;
+const Logger = require('../utils/Logger');
 
 const ROOMS_STATE_UNEXIST = 'unexistant'
 const ROOMS_STATE_LOBBY = 'lobby';
@@ -162,6 +162,7 @@ class Rooms {
                     //assign roomId for user
                     user.roomId = roomId;
                     await rSet(`usr${user.id}RoomId`, roomId)
+                    Logger.info(`connecting room${user.roomId} usr${user.id}`);
 
                     this.socketIOServer.in(`/room${roomId}`).emit('/rooms/connect', roomId, user);
                     socket.emit('/rooms/connect', roomId, user);
@@ -233,6 +234,8 @@ class Rooms {
                 let roomLastId = await rIncr('roomLastId');
                 let passHash = false;
 
+                Logger.info(`creating room${user.roomId}`, { mapId, name, volume: usersCount || config.defaultRoomVolume, state: ROOMS_STATE_LOBBY, mode, user: `usr${user.id}` });
+
                 user.roomId = roomLastId;
                 await rSet(`usr${user.id}RoomId`, roomLastId)
 
@@ -284,12 +287,13 @@ class Rooms {
             let keys = await rHkeys(`${user.roomId}`);
             let usersCount = keys.filter(key => key.match(/^usr(undefined|\d*)$/)).length;
             if (usersCount === 0) {
-                console.log(`removing empty room${user.roomId}`);
+                Logger.info(`removing empty room${user.roomId}`, user)
                 await rDel(`room${user.roomId}`);
                 this.socketIOServer.emit('/rooms/deleted', `room${user.roomId}`)
             }
             socket.emit('/rooms/leave', user.roomId, user);
             user.roomId = null;
+            Logger.info(`leaving room${user.roomId} usr${user.id}`);
             await rDel(`usr${user.id}RoomId`);
 
             this.socketIOServer.in(`/room${user.roomId}`).emit('/rooms/leave', user.roomId, user);
