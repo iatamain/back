@@ -291,7 +291,7 @@ class Rooms {
 
             this.socketIOServer.emit('/rooms/leave', `room${user.roomId}`, user);
 
-            let keys = await rHkeys(`${user.roomId}`);
+            let keys = await rHkeys(`room${user.roomId}`);
             let usersCount = keys.filter(key => key.match(/^usr(undefined|\d*)$/)).length;
             if (usersCount === 0) {
                 Logger.info(`removing empty room${user.roomId}`, user)
