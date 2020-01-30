@@ -56,6 +56,8 @@ app
 
 //Temp. random subscriber/event generator for front
 const socketApp = socketio();
+const rooms = new Rooms(socketApp);
+
 socketApp.on('connection', async socket => {
     let authKey = socket.handshake.query['auth_key'];
     let viewerId = socket.handshake.query['viewer_id'];
@@ -67,28 +69,32 @@ socketApp.on('connection', async socket => {
         }
         user = user.dataValues;
 
-        const rooms = new Rooms(socketApp);
-        user.roomId = await rooms.getRoomId(user);
-
         socket
-            .on('/rooms/list', (...params) => {
+            .on('/rooms/list', async (...params) => {
+                user.roomId = await rooms.getRoomId(user);
                 rooms.getList(socket, user, ...params);
             })
-            .on('/rooms/my', (...params) => {
+            .on('/rooms/my', async (...params) => {
+                user.roomId = await rooms.getRoomId(user);
                 rooms.getMy(socket, user, ...params);
             })
 
-            .on('/rooms/create', (...params) => {
+            .on('/rooms/create', async (...params) => {
+                user.roomId = await rooms.getRoomId(user);
                 rooms.create(socket, user, ...params);
             })
-            .on('/rooms/connect', (...params) => {
+            .on('/rooms/connect', async (...params) => {
+                user.roomId = await rooms.getRoomId(user);
                 rooms.connect(socket, user, ...params);
             })
-            .on('/rooms/leave', () => {
+            .on('/rooms/leave', async () => {
+                user.roomId = await rooms.getRoomId(user);
                 rooms.leave(socket, user);
             })
 
             .on('/room', async (roomId) => {
+                user.roomId = await rooms.getRoomId(user);
+
                 socket.emit('/response', '/room', roomId);
                 let roomUsersCount = ~~(Math.random() * 10);
                 let roomUsers = [];
