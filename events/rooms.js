@@ -7,6 +7,7 @@ const redis = require('redis').createClient();
 const config = require('../config');
 const promisify = require('util').promisify;
 const Logger = require('../utils/Logger');
+const User = require('../data/models/user');
 
 const ROOMS_STATE_UNEXIST = 'unexistant'
 const ROOMS_STATE_LOBBY = 'lobby';
@@ -83,7 +84,7 @@ class Rooms {
                     if (!roomData.users) {
                         roomData.users = [];
                     }
-                    roomData.users.push(this.users.get(parseInt(key.split('usr').shift())));
+                    roomData.users.push(this.getUser(parseInt(key.split('usr').shift())));
                 }
                 else if (key !== 'password') {
                     roomData[key] = await rHget(roomKey, key);
@@ -118,7 +119,7 @@ class Rooms {
                 if (!roomData.users) {
                     roomData.users = [];
                 }
-                roomData.users.push(this.users.get(parseInt(key.split('usr').shift())));
+                roomData.users.push(this.getUser(parseInt(key.split('usr').shift())));
             }
             else if (key !== 'password') {
                 roomData[key] = await rHget(roomKey, key);
@@ -305,6 +306,21 @@ class Rooms {
         else {
             socket.emit('clientError', 'No roomId assigned to user');
         }
+    }
+
+    async getUser(id) {
+        let user = this.users.get(id);
+        if (user) {
+            return user;
+        }
+
+        user = await User.findOne({ where: { id: id } });
+        if (user) {
+            user = user.dataValues;
+            user.roomId = await this.getRoomId(user);
+            this.users.set(user.id, user);
+        }
+        return user;
     }
 
     async step(socket, user) {
