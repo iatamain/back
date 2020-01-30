@@ -84,7 +84,7 @@ class Rooms {
                     if (!roomData.users) {
                         roomData.users = [];
                     }
-                    roomData.users.push(this.getUser(parseInt(key.split('usr').shift())));
+                    roomData.users.push(await this.getUser(parseInt(key.split('usr').shift())));
                 }
                 else if (key !== 'password') {
                     roomData[key] = await rHget(roomKey, key);
@@ -119,7 +119,7 @@ class Rooms {
                 if (!roomData.users) {
                     roomData.users = [];
                 }
-                roomData.users.push(this.getUser(parseInt(key.split('usr').shift())));
+                roomData.users.push(await this.getUser(parseInt(key.split('usr').shift())));
             }
             else if (key !== 'password') {
                 roomData[key] = await rHget(roomKey, key);
