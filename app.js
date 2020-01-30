@@ -9,6 +9,8 @@ const config = require('./config');
 const utils = require('./utils');
 const User = require('./data/models/user');
 const Rooms = require('./events/rooms');
+const Logger = require('./utils/Logger');
+
 
 const app = express();
 
@@ -70,6 +72,24 @@ socketApp.on('connection', async socket => {
         user = user.dataValues;
 
         socket
+            .on('/log', (...params) => {
+                if (config.enableClientLog) {
+                    if (!params || !params.length) {
+                        return socket.emit('clientError', 'No data for me?...')
+                    }
+
+                    let logType = params.shift();
+                    if (['info', 'debug', 'err'].includes(logType)) {
+                        return Logger[logType](`usr${user.id} log: `, ...params);
+                    }
+
+                    return socket.emit('clientError', "You're doing something weird and it's not likely to be happened!");
+                }
+                else {
+                    socket.emit('clientError', 'Sorry, we decided to disable it :(');
+                }
+            })
+
             .on('/rooms/list', async (...params) => {
                 user.roomId = await rooms.getRoomId(user);
                 rooms.getList(socket, user, ...params);
